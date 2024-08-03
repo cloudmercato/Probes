@@ -4,12 +4,16 @@ import time
 
 
 class BaseProber:
-    def __init__(self, interval=2):
+    def __init__(self, interval=2, **options):
         self.interval = interval
         self.running = False
         self.results = {}
         self.thread = threading.Thread(target=self.run)
         self.logger = logging.getLogger(f'probes.{self.id}')
+        self.set_options(options)
+
+    def set_options(self, options):
+        pass
 
     def append(self, result):
         t = time.time()

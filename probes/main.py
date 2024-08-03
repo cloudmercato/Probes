@@ -3,6 +3,7 @@ import argparse
 import json
 import subprocess
 
+from probes import utils
 from probes.manager import ProbeManager, DEFAULT_PROBERS
 from probes.loggers import logger
 
@@ -33,7 +34,11 @@ def main():
         )
         stdout, stderr = process.communicate()
 
-    print(json.dumps(manager.get_results()))
+    print(json.dumps(
+        manager.get_results(),
+        indent=2,
+        cls=utils.JSONEncoder,
+    ))
 
 
 if __name__ == '__main__':
