@@ -6,4 +6,4 @@ __email__ = 'anthony@cloud-mercato.com'
 __url__ = 'https://github.com/cloudmercato/probes'
 __license__ = 'MIT'
 
-from manager import ProbeManager
+from .manager import ProbeManager

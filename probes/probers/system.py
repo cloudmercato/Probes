@@ -1,8 +1,12 @@
+"""Retrieve basic system values from Python psutil"""
 import psutil
 from probes.probers import base
 
 
 class CpuProber(base.BaseProber):
+    """
+    Retrieve informations for CPU usage.
+    """
     id = 'cpu'
 
     def run_probe(self):
@@ -37,6 +41,9 @@ class CpuProber(base.BaseProber):
 
 
 class MemoryProber(base.BaseProber):
+    """
+    Retrieve informations for memory usage.
+    """
     id = 'memory'
 
     def run_probe(self):
