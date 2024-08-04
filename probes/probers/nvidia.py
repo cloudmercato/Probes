@@ -1,24 +1,75 @@
 """Retrieve NVIDIA GPU data from pynvml"""
-# WIP
 # TODO: Check minimum interval
 from collections import defaultdict
 import pynvml
 from probes.probers import base
 
 # https://developer.download.nvidia.com/compute/DevZone/NVML/doxygen/group__group4.html
+TEMPERATURE_SENSORS = (
+    ('gpu', pynvml.NVML_TEMPERATURE_GPU),
+    # ('memory', pynvml.NVML_TEMPERATURE_MEM),
+    # ('board', pynvml.NVML_TEMPERATURE_BOARD),
+    # ('vr1', pynvml.NVML_TEMPERATURE_VR1),
+    # ('vr2', pynvml.NVML_TEMPERATURE_VR2),
+    # ('vr3', pynvml.NVML_TEMPERATURE_VR3),
+    # ('vr4', pynvml.NVML_TEMPERATURE_VR4),
+)
+def get_temperatures(handle):
+    data = {}
+    for key, sensor in TEMPERATURE_SENSORS:
+        data[key] = pynvml.nvmlDeviceGetTemperature(handle, sensor)
+    return data
+
+
+ERROR_BIT_TYPES = (
+    ('single', pynvml.NVML_SINGLE_BIT_ECC),
+    ('double', pynvml.NVML_DOUBLE_BIT_ECC),
+)
+COUNTER_TYPES = (
+    ('volatile', pynvml.NVML_VOLATILE_ECC),
+    ('aggregate', pynvml.NVML_AGGREGATE_ECC),
+)
+def get_ecc_errors(handle):
+    data = {}
+    for b_key, error_type in ERROR_BIT_TYPES:
+        for c_key, counter_type in COUNTER_TYPES:
+            try: 
+                data[f"{b_key}_{c_key}"] = pynvml.nvmlDeviceGetTotalEccErrors(
+                    handle, error_type, counter_type)
+            except pynvml.NVMLError_NotSupported:
+                pass
+    return data
+
+
+CLOCK_TYPES = (
+    # ('core', pynvml.NVML_CLOCK_CORE),
+    ('sm', pynvml.NVML_CLOCK_SM),
+    ('mem', pynvml.NVML_CLOCK_MEM),
+)
+def get_clock_info(handle):
+    data = {}
+    for key, clock_type in CLOCK_TYPES:
+        data[key] = pynvml.nvmlDeviceGetClockInfo(handle, clock_type)
+    return data
+
 FUNCS = {
     'name': pynvml.nvmlDeviceGetName,
+    'clock_info': get_clock_info,
     'memory_info': pynvml.nvmlDeviceGetMemoryInfo,
     'pci_info': pynvml.nvmlDeviceGetPciInfo,
     'persistence_mode': pynvml.nvmlDeviceGetPersistenceMode,
-    'power_capping_mode': pynvml.nvmlDeviceGetPowerCappingMode,
+    # 'power_capping_mode': pynvml.nvmlDeviceGetPowerCappingMode,
     'power_state': pynvml.nvmlDeviceGetPowerState,
     'power_usage': pynvml.nvmlDeviceGetPowerUsage,
-    'temperature': pynvml.nvmlDeviceGetTemperature,
-    'total_ecc_errors': pynvml.nvmlDeviceGetTotalEccErrors,
+    'temperature': get_temperatures,
+    'total_ecc_errors': get_ecc_errors,
     'utilization_rates': pynvml.nvmlDeviceGetUtilizationRates,
     'fan_speed': pynvml.nvmlDeviceGetFanSpeed,
 }
+
+
+def info_parser(data):
+    return {f: getattr(data, f) for f, _ in data._fields_ }
 
 
 class NvidiaGpuProber(base.BaseProber):
@@ -56,8 +107,11 @@ class NvidiaGpuProber(base.BaseProber):
             func = FUNCS[func_name]
             try:
                 data = func(handle)
-                infos[func_name] = vars(data)
+                if hasattr(data, '_fields_'):
+                    data = info_parser(data)
+                infos[func_name] = data
             except Exception as err:
+                self.logger.warning("Error: %s", err)
                 self._append_error(err)
         return infos
 
