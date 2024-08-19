@@ -5,6 +5,7 @@ probes is handy tool to monitor systems during workloads. It aims to collect met
 
 - CPU
 - RAM
+- Network
 - NVIDIA GPU
 - VPU
 - Apple Silicon
@@ -204,6 +205,55 @@ Sample::
     }
   }
 
+
+probes.prober.system.NetworkProber
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+Metrics about network usage. It uses psutil under the hood.
+
+Sample::
+
+  {
+    "network": {
+      "1724063994.340725": {
+        "bytes_sent": 5046946816,
+        "bytes_recv": 6862913536,
+        "packets_sent": 145665481,
+        "packets_recv": 349973714,
+        "errin": 0,
+        "errout": 0,
+        "dropin": 400863614200,
+        "dropout": 0
+      },
+      "1724063996.3488991": {
+        "bytes_sent": 5046956032,
+        "bytes_recv": 6862915584,
+        "packets_sent": 145665496,
+        "packets_recv": 349973730,
+        "errin": 0,
+        "errout": 0,
+        "dropin": 400863614200,
+        "dropout": 0,
+        "bytes_sent_diff": 9216,
+        "bytes_sent_speed": 4608.0,
+        "bytes_recv_diff": 2048,
+        "bytes_recv_speed": 1024.0,
+        "packets_sent_diff": 15,
+        "packets_sent_speed": 7.5,
+        "packets_recv_diff": 16,
+        "packets_recv_speed": 8.0,
+        "errin_diff": 0,
+        "errin_speed": 0.0,
+        "errout_diff": 0,
+        "errout_speed": 0.0,
+        "dropin_diff": 0,
+        "dropin_speed": 0.0,
+        "dropout_diff": 0,
+        "dropout_speed": 0.0
+      },
+      ...
+    }
+  }
 
 probes.prober.nvidia.NvidiaGpuProber
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
