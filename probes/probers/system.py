@@ -52,3 +52,30 @@ class MemoryProber(base.BaseProber):
             'swap_memory': psutil.swap_memory()._asdict(),
         }
         return result
+
+
+class NetworkProber(base.BaseProber):
+    """
+    Retrieve informations for network usage.
+    """
+    id = 'network'
+    last_probe = None
+
+    def _make_speed(self, key, value):
+        diff = value - self.last_probe[key]
+        speed = diff / self.interval
+        return {
+            f"{key}_diff": diff,
+            f"{key}_speed": speed,
+        }
+
+    def run_probe(self):
+        result = psutil.net_io_counters()._asdict()
+
+        if self.last_probe is not None:
+            for key, value in result.copy().items():
+                result.update(self._make_speed(key, value))
+
+        self.last_probe = result
+
+        return result
