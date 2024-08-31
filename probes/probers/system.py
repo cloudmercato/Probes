@@ -25,7 +25,6 @@ class CpuProber(base.BaseProber):
             ],
 
             'cpu_stats': psutil.cpu_stats()._asdict(),
-            'cpu_freq': psutil.cpu_freq()._asdict(),
 
             'load_avg': psutil.getloadavg(),
         }
